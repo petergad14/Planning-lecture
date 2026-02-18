@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>خريطة مستقبلك - إزاي تخطط لحياتك</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Reset & Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            overflow: hidden; /* إخفاء شريط التمرير الأساسي */
+        }
+
+        /* Presentation Container - Uses Scroll Snapping */
+        .presentation {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        /* Individual Slide Settings */
+        .slide {
+            height: 100vh;
+            width: 100vw;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        /* Container for content */
+        .content-box {
+            max-width: 950px;
+            width: 100%;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 3rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        /* Typography */
+        h1 { font-size: 3.5rem; color: #1a1a1a; margin-bottom: 1rem; line-height: 1.3; font-weight: 900;}
+        h2 { font-size: 2.5rem; color: #0056b3; margin-bottom: 1.5rem; font-weight: 700;}
+        h3 { font-size: 1.5rem; color: #e63946; margin-bottom: 1rem; font-weight: 700;}
+        p { font-size: 1.25rem; line-height: 1.8; margin-bottom: 1rem; color: #444; }
+        ul, ol { margin-right: 2rem; margin-bottom: 1.5rem; font-size: 1.25rem; line-height: 1.8; color: #444;}
+        li { margin-bottom: 0.8rem; }
+        strong { color: #1a1a1a; font-weight: 700;}
+
+        /* Highlight Boxes */
+        .highlight {
+            background-color: #f8f9fa;
+            border-right: 5px solid #0056b3;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 8px 0 0 8px;
+        }
+
+        /* Activity Slides Styling */
+        .activity-box {
+            border: 3px dashed #e63946;
+            background-color: #fff0f1;
+        }
+        .activity-box h2 { color: #e63946; }
+
+        /* Two Column Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* --- SMART Boxes Design --- */
+        .smart-container {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        .smart-box {
+            flex: 1;
+            min-width: 120px;
+            padding: 2rem 1rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .smart-box:hover {
+            transform: translateY(-10px) !important;
+        }
+        .smart-box h3 {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            line-height: 1;
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+        }
+        .smart-box p {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .smart-box span {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 400;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+
+        /* ألوان مربعات SMART */
+        .bg-s { background: #e63946; color: white; }
+        .bg-s h3, .bg-s p, .bg-s span { color: white; }
+        .bg-m { background: #f4a261; color: white; }
+        .bg-m h3, .bg-m p, .bg-m span { color: white; }
+        .bg-a { background: #e9c46a; color: #333; }
+        .bg-a h3, .bg-a p, .bg-a span { color: #333; }
+        .bg-r { background: #2a9d8f; color: white; }
+        .bg-r h3, .bg-r p, .bg-r span { color: white; }
+        .bg-t { background: #264653; color: white; }
+        .bg-t h3, .bg-t p, .bg-t span { color: white; }
+
+        /* --- Decorative CSS Shapes --- */
+        .shape-circle {
+            position: absolute;
+            top: -100px;
+            left: -100px; 
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #0056b3 0%, #00b4d8 100%);
+            border-radius: 50%;
+            opacity: 0.1;
+            z-index: 1;
+        }
+
+        .shape-polygon {
+            position: absolute;
+            bottom: -50px;
+            right: -50px; 
+            width: 400px;
+            height: 400px;
+            background: #e63946;
+            clip-path: polygon(0 0, 0% 100%, 100% 100%);
+            opacity: 0.05;
+            z-index: 1;
+            transform: scaleX(-1); 
+        }
+
+        .shape-dots {
+            position: absolute;
+            top: 50%;
+            right: 5%; 
+            width: 150px;
+            height: 150px;
+            background-image: radial-gradient(#333 1px, transparent 1px);
+            background-size: 15px 15px;
+            opacity: 0.15;
+            z-index: 1;
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 20px;
+            font-size: 1rem;
+            color: #888;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* === Animation Steps CSS === */
+        .step {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+        .step.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Timer Button Hover */
+        #startTimerBtn:hover {
+            background: #004494;
+            transform: scale(1.05);
+            transition: 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="presentation">
+
+        <section class="slide">
+            <div class="shape-circle"></div>
+            <div class="shape-dots"></div>
+            <div class="content-box" style="text-align: center;">
+                <h3>سلسلة المحاضرات</h3>
+                <h1>خريطة مستقبلك (الـ GPS)</h1>
+                <p class="step"><strong>(إزاي تبطل تمشي بالبركة وتخطط لحياتك صح)</strong></p>
+                <p class="step" style="margin-top: 2rem; font-size: 1rem; color: #888;">اضغط المسافة (Space) عشان تبدأ &darr;</p>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="shape-polygon"></div>
+            <div class="content-box">
+                <h2>Part 1: Dream Vs Plan</h2>
+                <div class="grid-2">
+                    <div class="step">
+                        <h3>Dream ☁️</h3>
+                        <p>وجهة من غير خريطة. كلامه حلو وبيدي طاقة إيجابية ("أنا هبقى مدير قد الدنيا"، "هفتح شركتي")، بس مش محتاج أي مجهود.</p>
+                        <div class="highlight">
+                            <strong>بافلي :</strong> بيقضي ٣ ساعات بيتفرج على تيك توك "إزاي تبقى مليونير" وبيحس إنه كده أنجز، بس مبيعملش حاجة على أرض الواقع.
+                        </div>
+                    </div>
+                    <div class="step">
+                        <h3>Plan 🗺️</h3>
+                        <p>هي إحداثيات الـ GPS، والعربية، والبنزين. حاجة محددة بخطوات واضحة.</p>
+                        <div class="highlight">
+                            <strong>مينا :</strong> بيقعد نص ساعة بس كل يوم يذاكر كورس برمجة أو لغة. مينا بيكسب لأن "الحركة بركة"، والخطوات الصغيرة بتعمل نتيجة.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="shape-circle" style="right: -100px; left: auto; background: #ffb703;"></div>
+            <div class="content-box">
+                <h2>Part 2: Why Bother Planning</h2>
+                <p class="step">ليه تخطط والدنيا بتتغير بسرعة أصلاً؟ عشان التلات أسباب دول:</p>
+                <ul>
+                    <li class="step"><strong>بيريح دماغك من "إرهاق القرارات":</strong> في سنك ده إنت بتاخد آلاف القرارات. الخطة بتخليك تصحى الصبح عارف هتعمل إيه، بدل ما تضيع طاقتك في التفكير "أذاكر ولا أنزل؟".</li>
+                    <li class="step"><strong>بيقلل التوتر والقلق:</strong> القلق بيكبر في المجهول. لما تكتب الحاجات اللي وراك على ورق، إنت بتخرجها من دماغك وبتشوفها بحجمها الحقيقي.</li>
+                    <li class="step"><strong>Mike Tyson Rule:</strong> <em>"كل الناس عندها خطة، لحد ما ياخدوا أول بوكس في وشهم."</em> الخطط ممكن تبوظ، بس وجود خطة أساسية بيخليك تعرف <strong>تعدل مسارك (Pivot)</strong> بدل ما تنهار تماماً.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="shape-dots" style="left: 5%; right: auto;"></div>
+            <div class="content-box activity-box">
+                <h2>🛑 نشاط ١: تمرين الـ ١٠ سنين / ١٠ أيام</h2>
+                <p class="step">طلعوا موبايلاتكم أو ورقة وقلم، خلينا نتحرك شوية:</p>
+                <ol>
+                    <li class="step"><strong>الخطوة الأولى (الحلم - ٦٠ ثانية):</strong> اكتب إنت عايز تكون فين بالظبط بعد ١٠ سنين من دلوقتي (شغلك، مكانك، مستوى حياتك).</li>
+                    <li class="step"><strong>الخطوة التانية (الخطة - دقيقتين):</strong> اكتب <strong>أكشن واحد بس</strong> ومحدد تقدر تعمله في <strong>الـ ١٠ أيام الجايين</strong> يقربك ١٪ من حلمك ده.</li>
+                    <li class="step"><strong>المشاركة:</strong> مين يحب يشاركنا الـ "أكشن" بتاعه؟</li>
+                </ol>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="shape-polygon" style="top: -50px; bottom: auto; transform: scaleX(-1) rotate(180deg);"></div>
+            <div class="content-box">
+                <h2>Part 3: How to Select Your Goals</h2>
+                <p class="step">اتأكد إنك بتتسلق الجبل الصح، مش أي جبل والسلام.</p>
+                <div class="highlight step">
+                    <h3>The "Why?" Audit</h3>
+                    <p>اسأل نفسك: <em>"هل ده هدفي أنا، ولا هدف أهلي؟ هل ده عشاني، ولا عشان شكلي قدام الناس وعلى إنستجرام؟"</em></p>
+                </div>
+                <h3 class="step">Process vs. Prize</h3>
+                <p class="step">ماتختارش هدف بس عشان الجايزة في الآخر شكلها حلو. اختاره عشان إنت مستعد تستحمل "التعب" بتاع الرحلة.</p>
+                <p class="step"><em>مثال:</em> كلنا عايزين نبقى رواد أعمال وعندنا شركات (الجايزة). بس هل إنت مستعد تشتغل ١٤ ساعة في اليوم وتواجه رفض ومشاكل مادية (الرحلة)؟ لو كاره الرحلة، غيّر الهدف.</p>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="shape-circle" style="width: 500px; height: 500px; opacity: 0.03;"></div>
+            <div class="content-box">
+                <h2>Part 4: The SMART Method</h2>
+                <p class="step">إزاي تحول أي أمنية لهدف حقيقي قابل للتنفيذ؟</p>
+                
+                <div class="smart-container">
+                    <div class="smart-box bg-s step">
+                        <h3>S</h3>
+                        <p>محدد</p>
+                        <span>Specific</span>
+                    </div>
+                    <div class="smart-box bg-m step">
+                        <h3>M</h3>
+                        <p>يُقاس</p>
+                        <span>Measurable</span>
+                    </div>
+                    <div class="smart-box bg-a step">
+                        <h3>A</h3>
+                        <p>واقعي</p>
+                        <span>Achievable</span>
+                    </div>
+                    <div class="smart-box bg-r step">
+                        <h3>R</h3>
+                        <p>مرتبط بحياتك</p>
+                        <span>Relevant</span>
+                    </div>
+                    <div class="smart-box bg-t step">
+                        <h3>T</h3>
+                        <p>بوقت محدد</p>
+                        <span>Time-Bound</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;" class="step">
+                    <ul>
+                        <li><strong>الهدف العادي:</strong> "أنا عايز أجيب درجات كويسة".</li>
+                        <li><strong>الهدف الـ SMART:</strong> "أنا هذاكر محاسبة ساعة كل يوم (M) عشان أجيب امتياز (S) في الميدتيرم اللي جاي (T)، وده هيساعدني أتخرج بتقدير (R)، وده واقعي لإن معايا وقت كفاية (A)".</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="shape-dots"></div>
+            <div class="content-box activity-box">
+                <h2>🛑 نشاط ٢: "إزاي ننضف الهدف ده؟"</h2>
+                <p class="step">تخيل واحد صاحبك بيقولك الهدف العايم ده:</p>
+                <h1 class="step" style="text-align: center; margin: 2rem 0; color: #333;">"أنا عايز ألعب رياضة وأعمل فورمة الساحل"</h1>
+                <p class="step" style="text-align: center;"><strong>دوركم دلوقتي:</strong> يلا نطبق طريقة SMART ونخلي الهدف ده محدد وواضح!</p>
+                <p class="step" style="text-align: center; margin-top: 2rem; color: #888;"><em>(الهدف بعد التعديل: "هنزل الجيم في الجامعة ٣ أيام في الأسبوع، ٤٥ دقيقة، عشان أزيد ٢ كيلو عضلات قبل يوم ١ شهر ٧ الجاي.")</em></p>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="shape-polygon" style="right: auto; left: -50px; background: #0056b3;"></div>
+            <div class="content-box">
+                <h2>Part 5: Reverse Engineering</h2>
+                <p class="step">ابدأ من خط النهاية، وارجع بضهرك لورا لحد النهارده.</p>
+                <div class="highlight step">
+                    <strong>الهدف: تتقبل في تدريب صيفي (Internship) يوم ١ مايو.</strong>
+                    <ul>
+                        <li class="step"><em>ارجع خطوة (١٥ أبريل):</em> لازم تكون بتعمل المقابلات (Interviews).</li>
+                        <li class="step"><em>ارجع خطوة (١٥ مارس):</em> لازم تكون قدمت الـ CV في ٢٠ شركة.</li>
+                        <li class="step"><em>ارجع خطوة (١ مارس):</em> لازم الـ CV بتاعك يكون جاهز ومكتوب صح.</li>
+                        <li class="step"><strong>النهارده:</strong> تفتح اللاب توب وتكتب أول مسودة للـ CV وتبعته لدكتور يراجعه.</li>
+                    </ul>
+                </div>
+                <h3 class="step">Macro vs. Micro</h3>
+                <p class="step">Your goal is the Macro. Your daily habits are the Micro. You don't achieve goals; you achieve daily habits that result in the goal.</p>
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="shape-circle" style="background: #2a9d8f; opacity: 0.15; top: -50px; right: -50px;"></div>
+            <div class="content-box activity-box">
+                <h2>🛑 نشاط ٣: التحدي الكشفي (٥ دقايق) 🏕️</h2>
+                <p class="step">تخيلوا إنكم المسئولين عن تنظيم <strong>رحلة كشفية (خلوية) ليوم واحد بره الكنيسة</strong> لفريق "مرشح جوالة".</p>
+                <h3 class="step" style="margin-top: 1.5rem;">المطلوب من كل مجموعة تعمل Plan فيها:</h3>
+                <ol>
+                    <li class="step"><strong>الهدف:</strong> إيه الهدف من اليوم ده؟ (S)</li>
+                    <li class="step"><strong>المكان والميزانية:</strong> هنروح فين وتكلفة الفرد كام تقريباً؟ (M, A)</li>
+                    <li class="step"><strong>برنامج اليوم:</strong> جدول زمني واضح من ساعة ما نتجمع لحد ما نروّح. (T)</li>
+                    <li class="step"><strong>توزيع الأدوار:</strong> مين هيعمل إيه؟ (أكل، مواصلات، برنامج روحي/كشفي، إلخ).</li>
+                </ol>
+                
+                <div class="highlight step" style="text-align: center; margin-top: 2rem; border-right-color: #e63946;">
+                    <strong>معاكم ٥ دقايق بالظبط.. ورونا إبداعكم والتخطيط الصح هيطلع إيه!</strong>
+                    
+                    <div style="margin-top: 15px; background: #fff; padding: 15px; border-radius: 12px; display: inline-block; min-width: 250px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);">
+                        <div id="countdown" style="font-size: 3.5rem; font-weight: 900; color: #e63946; font-family: 'Segoe UI', Tahoma, monospace; direction: ltr; line-height: 1;">5:00</div>
+                        <button id="startTimerBtn" style="margin-top: 15px; padding: 10px 30px; font-size: 1.2rem; background: #0056b3; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">ابدأ التايمر ▶️</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="slide">
+            <div class="shape-circle" style="left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0.05; width: 600px; height: 600px;"></div>
+            <div class="content-box" style="text-align: center;">
+                <h2>Wrap-Up</h2>
+                <p class="step">الأحلام ببلاش وشكلها حلو، بس الخطة هي اللي بتجيب فلوس، وبتحقق نجاح، وبتوصلك للمكان اللي إنت بجد عايز تروحه.</p>
+                <br>
+                <div class="step" style="font-size: 2.2rem; color: #0056b3; font-weight: 700; line-height: 1.5; margin: 2rem 0;">
+                    You do not rise to the level of your goals. You fall to the level of your systems and plans
+                </div>
+                <p class="step"><em> James Clear (Atomic Habits) -</em></p>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            let currentSlideIndex = 0;
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        currentSlideIndex = Array.from(slides).indexOf(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 }); 
+
+            slides.forEach(slide => observer.observe(slide));
+
+            // Logic for moving slides
+            document.addEventListener('keydown', (e) => {
+                if (['Space', 'ArrowDown', 'ArrowLeft', 'PageDown'].includes(e.code)) {
+                    const currentSlide = slides[currentSlideIndex];
+                    const steps = currentSlide.querySelectorAll('.step');
+                    
+                    const nextStep = Array.from(steps).find(step => !step.classList.contains('active'));
+
+                    if (nextStep) {
+                        e.preventDefault(); 
+                        nextStep.classList.add('active'); 
+                    } else {
+                        if (currentSlideIndex < slides.length - 1) {
+                            e.preventDefault();
+                            slides[currentSlideIndex + 1].scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                }
+                
+                if (['ArrowUp', 'ArrowRight', 'PageUp'].includes(e.code)) {
+                     const currentSlide = slides[currentSlideIndex];
+                     const steps = currentSlide.querySelectorAll('.step');
+                     
+                     const activeSteps = Array.from(steps).filter(step => step.classList.contains('active'));
+                     
+                     if (activeSteps.length > 0) {
+                         e.preventDefault();
+                         activeSteps[activeSteps.length - 1].classList.remove('active');
+                     } else {
+                         if (currentSlideIndex > 0) {
+                             e.preventDefault();
+                             slides[currentSlideIndex - 1].scrollIntoView({ behavior: 'smooth' });
+                         }
+                     }
+                }
+            });
+
+            // Timer Logic
+            let timerInterval;
+            let timeRemaining = 300; // 5 minutes in seconds
+
+            const startBtn = document.getElementById('startTimerBtn');
+            const countdownDisplay = document.getElementById('countdown');
+
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                countdownDisplay.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            startBtn.addEventListener('click', function(e) {
+                // To prevent the spacebar from triggering the button again
+                this.blur(); 
+
+                if (timerInterval) clearInterval(timerInterval);
+                
+                timeRemaining = 300;
+                updateTimerDisplay();
+                
+                // Change button appearance
+                this.textContent = "شغال ⏳";
+                this.style.background = "#2a9d8f";
+                this.style.cursor = "default";
+                this.disabled = true;
+
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    updateTimerDisplay();
+
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        countdownDisplay.textContent = "خلص الوقت! ⏰";
+                        countdownDisplay.style.color = "#d90429";
+                        countdownDisplay.style.animation = "bounce 1s infinite";
+                    }
+                }, 1000);
+            });
+        });
+    </script>
+</body>
+</html>
