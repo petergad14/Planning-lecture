@@ -200,6 +200,13 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        /* Timer Button Hover */
+        #startTimerBtn:hover {
+            background: #004494;
+            transform: scale(1.05);
+            transition: 0.2s ease;
+        }
     </style>
 </head>
 <body>
@@ -355,6 +362,31 @@
         </section>
 
         <section class="slide">
+            <div class="shape-circle" style="background: #2a9d8f; opacity: 0.15; top: -50px; right: -50px;"></div>
+            <div class="content-box activity-box">
+                <h2>🛑 نشاط ٣: التحدي الكشفي (١٠ دقايق) 🏕️</h2>
+                <p class="step">تخيلوا إنكم المسئولين عن تنظيم <strong>رحلة كشفية (خلوية) ليوم واحد بره الكنيسة</strong> لفريق "مرشح جوالة".</p>
+                <h3 class="step" style="margin-top: 1.5rem;">المطلوب من كل مجموعة تعمل Plan فيها:</h3>
+                <ol>
+                    <li class="step"><strong>الهدف:</strong> إيه الهدف من اليوم ده؟ (S)</li>
+                    <li class="step"><strong>المكان والميزانية:</strong> هنروح فين وتكلفة الفرد كام تقريباً؟ (M, A)</li>
+                    <li class="step"><strong>برنامج اليوم:</strong> جدول زمني واضح من ساعة ما نتجمع لحد ما نروّح. (T)</li>
+                    <li class="step"><strong>توزيع الأدوار:</strong> مين هيعمل إيه؟ (أكل، مواصلات، برنامج روحي/كشفي، إلخ).</li>
+                </ol>
+                
+                <div class="highlight step" style="text-align: center; margin-top: 2rem; border-right-color: #e63946;">
+                    <strong>معاكم ١٠ دقايق بالظبط.. ورونا إبداعكم والتخطيط الصح هيطلع إيه!</strong>
+                    
+                    <div style="margin-top: 15px; background: #fff; padding: 15px; border-radius: 12px; display: inline-block; min-width: 250px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);">
+                        <div id="countdown" style="font-size: 3.5rem; font-weight: 900; color: #e63946; font-family: 'Segoe UI', Tahoma, monospace; direction: ltr; line-height: 1;">10:00</div>
+                        <button id="startTimerBtn" style="margin-top: 15px; padding: 10px 30px; font-size: 1.2rem; background: #0056b3; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Cairo', sans-serif; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">ابدأ التايمر ▶️</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="slide">
             <div class="shape-circle" style="left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0.05; width: 600px; height: 600px;"></div>
             <div class="content-box" style="text-align: center;">
                 <h2>Wrap-Up</h2>
@@ -374,7 +406,6 @@
             const slides = document.querySelectorAll('.slide');
             let currentSlideIndex = 0;
 
-            // تحديد الشريحة الحالية بناءً على السكرول (عشان لو نزلت بالماوس)
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
@@ -385,21 +416,18 @@
 
             slides.forEach(slide => observer.observe(slide));
 
-            // الاستماع للوحة المفاتيح
+            // Logic for moving slides
             document.addEventListener('keydown', (e) => {
-                // للتقدم للأمام (زر المسافة، السهم لتحت، السهم يمين، PageDown)
                 if (['Space', 'ArrowDown', 'ArrowLeft', 'PageDown'].includes(e.code)) {
                     const currentSlide = slides[currentSlideIndex];
                     const steps = currentSlide.querySelectorAll('.step');
                     
-                    // البحث عن أول عنصر غير ظاهر
                     const nextStep = Array.from(steps).find(step => !step.classList.contains('active'));
 
                     if (nextStep) {
-                        e.preventDefault(); // منع الصفحة من النزول لتحت
-                        nextStep.classList.add('active'); // إظهار العنصر
+                        e.preventDefault(); 
+                        nextStep.classList.add('active'); 
                     } else {
-                        // لو كل العناصر ظهرت، انتقل للشريحة اللي بعدها
                         if (currentSlideIndex < slides.length - 1) {
                             e.preventDefault();
                             slides[currentSlideIndex + 1].scrollIntoView({ behavior: 'smooth' });
@@ -407,25 +435,64 @@
                     }
                 }
                 
-                // للرجوع للخلف (السهم لفوق، السهم شمال، PageUp)
                 if (['ArrowUp', 'ArrowRight', 'PageUp'].includes(e.code)) {
                      const currentSlide = slides[currentSlideIndex];
                      const steps = currentSlide.querySelectorAll('.step');
                      
-                     // البحث عن آخر عنصر ظاهر عشان نخفيه
                      const activeSteps = Array.from(steps).filter(step => step.classList.contains('active'));
                      
                      if (activeSteps.length > 0) {
                          e.preventDefault();
                          activeSteps[activeSteps.length - 1].classList.remove('active');
                      } else {
-                         // لو مفيش عناصر ظاهرة، ارجع للشريحة اللي قبلها
                          if (currentSlideIndex > 0) {
                              e.preventDefault();
                              slides[currentSlideIndex - 1].scrollIntoView({ behavior: 'smooth' });
                          }
                      }
                 }
+            });
+
+            // Timer Logic
+            let timerInterval;
+            let timeRemaining = 600; // 10 minutes in seconds
+
+            const startBtn = document.getElementById('startTimerBtn');
+            const countdownDisplay = document.getElementById('countdown');
+
+            function updateTimerDisplay() {
+                const minutes = Math.floor(timeRemaining / 60);
+                const seconds = timeRemaining % 60;
+                countdownDisplay.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            startBtn.addEventListener('click', function(e) {
+                // To prevent the spacebar from triggering the button again
+                this.blur(); 
+
+                if (timerInterval) clearInterval(timerInterval);
+                
+                timeRemaining = 600;
+                updateTimerDisplay();
+                
+                // Change button appearance
+                this.textContent = "شغال ⏳";
+                this.style.background = "#2a9d8f";
+                this.style.cursor = "default";
+                this.disabled = true;
+
+                timerInterval = setInterval(() => {
+                    timeRemaining--;
+                    updateTimerDisplay();
+
+                    if (timeRemaining <= 0) {
+                        clearInterval(timerInterval);
+                        countdownDisplay.textContent = "خلص الوقت! ⏰";
+                        countdownDisplay.style.color = "#d90429";
+                        countdownDisplay.style.animation = "bounce 1s infinite";
+                    }
+                }, 1000);
             });
         });
     </script>
